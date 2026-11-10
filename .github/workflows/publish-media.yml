@@ -1,0 +1,30 @@
+name: Publish portfolio media
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download media package
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download media-v1 --pattern 'Antony-portfolio-full.zip' --dir /tmp
+      - name: Extract package
+        run: unzip -q /tmp/Antony-portfolio-full.zip -d /tmp/portfolio-package
+      - name: Publish images
+        run: |
+          cp -a /tmp/portfolio-package/Antony-portfolio-full/assets/. assets/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets
+          git diff --cached --quiet || { git commit -m "Add portfolio images"; git push; }
+      - name: Publish original videos
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for file in /tmp/portfolio-package/Antony-portfolio-full/media/*; do
+            gh release upload media-v1 "$file" --clobber
+          done
