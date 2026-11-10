@@ -735,11 +735,12 @@
 
   document.querySelector('[data-share]')?.addEventListener('click', async event => {
     const button = event.currentTarget;
-    const shareData = { title: 'Antony · 个人主页', text: '来看看 Antony 的作品与生活。', url: location.href };
+    const shareUrl = `https://florafuhao.github.io/anton-portfolio/${location.hash || ''}`;
+    const shareData = { title: 'Antony · 个人主页', text: '来看看 Antony 的作品与生活。', url: shareUrl };
     try {
       if (navigator.share) await navigator.share(shareData);
       else {
-        await navigator.clipboard.writeText(location.href);
+        await navigator.clipboard.writeText(shareUrl);
         button.innerHTML = '<span aria-hidden="true">✓</span> 已复制';
         window.setTimeout(() => { button.innerHTML = '<span aria-hidden="true">↗</span> 分享'; }, 1600);
       }
