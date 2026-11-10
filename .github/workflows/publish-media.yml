@@ -1,5 +1,8 @@
 name: Publish portfolio media
 on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publish-media.yml']
   workflow_dispatch:
 permissions:
   contents: write
