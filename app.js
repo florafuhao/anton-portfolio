@@ -5,7 +5,34 @@
   const assets = 'assets/';
   const assetUrl = path => /^(?:https?:|data:|blob:|file:)/i.test(path || '') ? path : `${assets}${path || ''}`;
   const posterAttribute = path => path ? ` poster="${assetUrl(path)}"` : '';
-  const publicVideo = filename => `https://github.com/florafuhao/anton-portfolio/releases/download/media-v1/${encodeURIComponent(filename)}`;
+  const publicVideoNames = new Map([
+    ['016defce0u228cce8b9cec304441b423.MP4', 'video-01.mp4'],
+    ['94c6eb545q19e81c1c27cae8d9807947.MP4', 'video-02.mp4'],
+    ['c05440a80u11d6b7f2b27664607658a4.MP4', 'video-03.mp4'],
+    ['m5-ev-avc.mp4', 'video-04.mp4'],
+    ['m5-braking-avc.mp4', 'video-05.mp4'],
+    ['model-y-avc.mp4', 'video-06.mp4'],
+    ['穿越到粘土世界里游日本_穿越到粘土世界里游日本_粘土滤镜_粘土特效_粘土世界的另一个我_大家觉得哪个.mp4', 'video-07.mp4'],
+    ['用五年的iPhone竟依然可以以换代修换新机_用五年的iPhone竟依然可以以换代修换新机_我的iP.mp4', 'video-08.mp4'],
+    ['网约车找工作建议 (16).mp4', 'video-09.mp4'],
+    ['IMG_7588.MOV', 'video-10.mov'],
+    ['戴着乐奇一起旅行，时刻记录最好的我们！.mp4', 'video-11.mp4'],
+    ['给我的奥迪A3，换了双.mp4', 'video-12.mp4'],
+    ['说摩托的归宿是踏板那汽车的归宿也许是它_说摩托的归宿是踏板那汽车的归宿也许是它_我的第一辆汽车是一辆.mp4', 'video-13.mp4'],
+    ['video_正畸15年发生了哪些变化_正畸1..._0.mp4', 'video-14.mp4'],
+    ['秋天第一场露营感受风吹麦浪暴雨扎营_秋天第一场露营感受风吹麦浪暴雨扎营_秋天的第一场露营一路北上感受 (1).mp4', 'video-15.mp4'],
+    ['把2025的记忆浓缩在了40s去感受去热爱_把2025的记忆浓缩在了40s去感受去热爱_1月_以日本 (1).mp4', 'video-16.mp4'],
+    ['私日本物語一分钟游大阪京都_私日本物語一分钟游大阪京都_旅游vlog_vlog_日本旅游_日本红叶季.mp4', 'video-17.mp4'],
+    ['Jeju在冬天开始怀念济州岛的夏天_Jeju在冬天开始怀念济州岛的夏天_安东尼小符号_济州岛旅行_济.mp4', 'video-18.mp4'],
+    ['我的求婚现场片尾附详细流程攻略_我的求婚现场片尾附详细流程攻略_我终于求婚啦_周三的突发奇想周四的行.mp4', 'video-19.mp4'],
+    ['video_以为奥迪A3不贵直到我算了下养车..._0.mp4', 'video-20.mp4'],
+    ['video_全网第二辆越野姿态北斗星露营首秀..._0.mp4', 'video-21.mp4'],
+    ['嗨害嗨露营装备大盲盒拆它_嗨害嗨露营装备大盲盒拆它_采购了第N批露营装备并且这次都是大件好物性价比极.mp4', 'video-22.mp4'],
+    ['video_准备抢富士-黄牛看了这个都挠头_..._0.mp4', 'video-23.mp4'],
+    ['奥迪A3也能玩床车搭建_奥迪A3也能玩床车搭建_借着出去露营的机会给大家再拍一次更详细的床车搭建流程 (1).mp4', 'video-24.mp4'],
+    ['video_谁还在买富士XM5啊_谁还在买富..._0.mp4', 'video-25.mp4'],
+  ]);
+  const publicVideo = filename => `https://github.com/florafuhao/anton-portfolio/releases/download/media-v1/${encodeURIComponent(publicVideoNames.get(filename) || filename)}`;
   const downloadsVideo = filename => location.protocol === 'file:' ? `file:///Users/fuhao/Downloads/${encodeURIComponent(filename)}` : publicVideo(filename);
   const projectVideo = filename => location.protocol === 'file:' ? `file:///Users/fuhao/.codex/.chatgpt-projects/g-p-6ae9fb8d791c81918619f25bcc5693a9/anton-portfolio/tmp/videos/${encodeURIComponent(filename)}` : publicVideo(filename);
   const routes = ['home'];
@@ -763,4 +790,43 @@
 
   window.addEventListener('hashchange', renderRoute);
   renderRoute();
+})();
+
+
+// Show a readable fallback when a visitor cannot play a video.
+(() => {
+  const notices = new WeakMap();
+  const showNotice = video => {
+    if (!(video instanceof HTMLVideoElement) || !video.controls) return;
+    let note = notices.get(video);
+    if (!note) {
+      note = document.createElement('small');
+      note.className = 'video-playback-notice';
+      note.setAttribute('role', 'status');
+      note.style.cssText = 'display:block;margin:8px 0 0;font-size:12px;line-height:1.6;color:#b8bcc4;text-align:center;';
+      video.insertAdjacentElement('afterend', note);
+      notices.set(video, note);
+    }
+    note.textContent = '视频暂时无法播放，请检查网络连接后重试。';
+    note.hidden = false;
+  };
+  const clearNotice = video => {
+    const note = notices.get(video);
+    if (note) { note.hidden = true; note.style.display = 'none'; }
+  };
+  document.addEventListener('error', event => {
+    const video = event.target;
+    showNotice(video);
+    const note = notices.get(video);
+    if (note) note.style.display = 'block';
+  }, true);
+  document.addEventListener('playing', event => clearNotice(event.target), true);
+  document.addEventListener('loadeddata', event => clearNotice(event.target), true);
+  document.addEventListener('waiting', event => {
+    if (!navigator.onLine && /^https?:/i.test(event.target.currentSrc || '')) {
+      showNotice(event.target);
+      const note = notices.get(event.target);
+      if (note) note.style.display = 'block';
+    }
+  }, true);
 })();
