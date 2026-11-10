@@ -8,10 +8,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Download media package
+      - name: Download split media package
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release download media-v1 --pattern 'Antony-portfolio-full.zip' --dir /tmp
+        run: |
+          mkdir -p /tmp/portfolio-parts
+          gh release download media-v1 --pattern 'portfolio.part-*' --dir /tmp/portfolio-parts
+          test "$(find /tmp/portfolio-parts -type f | wc -l)" -eq 8
+          cat /tmp/portfolio-parts/portfolio.part-* > /tmp/Antony-portfolio-full.zip
+          echo "0259154cbd21ac36d6e2a84c9225b29aa08c37406a578be3e9b7815a9181a7b2  /tmp/Antony-portfolio-full.zip" | sha256sum -c -
       - name: Extract package
         run: unzip -q /tmp/Antony-portfolio-full.zip -d /tmp/portfolio-package
       - name: Publish images
